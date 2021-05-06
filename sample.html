@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>idemeum JS SDK</title>
+    <link rel="stylesheet" type="text/css" href="/src/styles.css" />
+    <script src="https://asset.idemeum.com/sdk/idemeum_1.0.0.min.js"></script>
+    <script>
+      // Sample to initialize idemeum JS SDK
+      var idemeum = new IdemeumManager(
+        // 👇 Replace clientId with the the one you get from idemeum developer portal
+        (clientId = "00000000-0000-0000-0000-000000000000")
+      );
+      // Sample to evaluate login state of the user
+      function isUserLoggedIn() {
+        // Process the user logged-in state.
+        idemeum
+          .isLoggedIn()
+          .then(function (data) {
+            //  Display user claims if the user is logged in
+            renderUserClaims();
+          })
+          .catch(function (errorData) {
+            // Display the login button if the user is NOT logged in
+            html = `<button id="btn-login" onclick="login()">Log in</button>`;
+            document.getElementById("initial").innerHTML = html;
+          });
+      }
+      function login() {
+        idemeum
+          .login()
+          .then(function (signinResponse) {
+            // Your application will receive ID and Access tokens from idemeum
+            // renderUserClaims() (defined below) validates the oidc token and fetches the user approved claims
+            renderUserClaims();
+          })
+          .catch(function (errorResponse) {
+            // If there is an error you can process it here
+            console.log(err);
+          });
+      }
+      function renderUserClaims() {
+        idemeum
+          .userClaims()
+          .then(function (userClaimsResponse) {
+            //fetch user approved claims from OIDC token
+            htmlStart = `<div>
+        	              <p align="left">You are currently logged in.</p>
+                          <pre id="ipt-user-profile" align="left">User profile:<br>`;
+            htmlProfile =
+              "<b><h3 style='color:Tomato;'>First Name:" +
+              userClaimsResponse.given_name +
+              "</h3></b><br>" +
+              "<b><h3 style='color:Tomato;'>Last Name:" +
+              userClaimsResponse.family_name +
+              "</h3></b><br>" +
+              "<b><h3 style='color:Tomato;'>Email:" +
+              userClaimsResponse.email;
+
+            htmlEnd = `
+                    </pre>
+                    </div>
+                    <button id="btn-logout" onclick="idemeum.logout();isUserLoggedIn();">Log out</button>`;
+            document.getElementById("initial").innerHTML =
+              htmlStart + htmlProfile + htmlEnd;
+          })
+          .catch(function (errorResponse) {
+            // If there is an error you can process it here
+          });
+      }
+    </script>
+  </head>
+  <body
+    onload="setTimeout(function () {
+    isUserLoggedIn();
+  }, 500);"
+  >
+    <h2>idemeum JS authentication sample</h2>
+    <h4>Welcome to Application!</h4>
+    <div id="initial"><p>Loading...</p></div>
+  </body>
+</html>
